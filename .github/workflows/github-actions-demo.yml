@@ -15,4 +15,7 @@ jobs:
       - name: List files in the repository
         run: |
           ls ${{ github.workspace }}
+      - name: error
+        run: |
+          bash .github/workflows/hello.sh
       - run: echo "🍏 This job's status is ${{ job.status }}."
