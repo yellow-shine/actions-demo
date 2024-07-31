@@ -19,5 +19,5 @@ jobs:
           ls ${{ github.workspace }}
       - name: error
         run: |
-          bash .github/workflows/hello.sh
-      - run: echo "🍏 This job's status is ${{ job.status }}."
+          gcc --version
+     
