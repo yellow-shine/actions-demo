@@ -19,6 +19,6 @@ jobs:
           ls ${{ github.workspace }}
       - name: gcc
         run: |
-          gcc --version
+          gcc-12 --version
      
 
