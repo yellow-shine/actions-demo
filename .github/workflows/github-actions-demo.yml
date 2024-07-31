@@ -22,7 +22,9 @@ jobs:
           CC: gcc-12
           CXX: g++-12
         run: |
-      
+          which gcc-12
+          which g++-12
+
           ${CC} --version
           ${CXX} --version
 
