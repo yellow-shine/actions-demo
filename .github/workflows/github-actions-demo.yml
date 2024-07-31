@@ -18,7 +18,10 @@ jobs:
         run: |
           ls ${{ github.workspace }}
       - name: gcc
+        env:
+          CC: gcc-12
         run: |
-          gcc-12 --version
+          env 
+          ${CC} --version
      
 
