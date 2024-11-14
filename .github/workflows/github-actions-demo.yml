@@ -17,14 +17,13 @@ jobs:
       - name: List files in the repository
         run: |
           ls ${{ github.workspace }}
-      - name: gcc
-        env:
-          CC: gcc-12
-          CXX: g++-12
+      - name: conan install
+  
         run: |
-          which gcc-12
-          which g++-12
+          which python
+          which pip
+          which pip3
 
-          ${CC} --version
-          ${CXX} --version
+         pip install conan@1.65.0  
+         conan --version
 
