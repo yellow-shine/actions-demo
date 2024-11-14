@@ -17,7 +17,7 @@ jobs:
       - name: List files in the repository
         run: |
           ls ${{ github.workspace }}
-      - name: conan install
+      - name: conan 
   
         run: |
           which python
