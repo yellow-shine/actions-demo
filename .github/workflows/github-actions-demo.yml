@@ -3,21 +3,24 @@ run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
 on: [workflow_dispatch]
 jobs:
   Explore-GitHub-Actions:
-    strategy:
-      fail-fast: false
+
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13' 
-      - name: Check Python and Pip Locations
-        run: |
-          which python
-          which pip
-          which pip3
+
 
       - name: Install Conan
+
         run: |
           pip install --user conan==1.65.0  # Use --user to avoid permission issues
           conan --version
+
+          export CONAN_REVISIONS_ENABLED=1 
+
+          conan remote list
+          conan install gdal/3.5.3@ -s compiler=gcc -s compiler.version=11 -s compiler.libcxx=libstdc++11 -s build_type=Release
+          conan search '*' --revisions
