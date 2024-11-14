@@ -5,14 +5,19 @@ jobs:
   Explore-GitHub-Actions:
     strategy:
       fail-fast: false
-    runs-on: macos-12
+    runs-on: ubuntu-latest
     steps:
-      - name: conan
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13' 
+      - name: Check Python and Pip Locations
         run: |
           which python
           which pip
           which pip3
 
-         pip install conan@1.65.0  
-         conan --version
-
+      - name: Install Conan
+        run: |
+          pip install --user conan==1.65.0  # Use --user to avoid permission issues
+          conan --version
