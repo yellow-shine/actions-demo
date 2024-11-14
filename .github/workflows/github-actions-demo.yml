@@ -1,50 +1,56 @@
-name: sync
-description: download package from conan center and upload it and dpendency to jfrog artifactory
-on:
-  workflow_dispatch:
-    inputs:
-      package:
-        description: 'The Conan package to install'
-        required: true
-        default: 'gdal/3.5.3'
-      upload:
-        description: 'Set to true to perform the upload, false for dry run'
-        required: false
-        default: 'false'
+name: Download and Upload Conan Package to JFrog Artifactory
+
+on: [workflow_dispatch]
 
 jobs:
-  sync:
+  Conan-Package-Management:
+
     runs-on: ubuntu-latest
+
     env:
       CONAN_REVISIONS_ENABLED: 1
-      CONAN_LOGIN_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
-      CONAN_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13' 
 
       - name: Install Conan
         run: |
-          pip install --user conan==1.65.0
+          pip install --user conan==${{ inputs.conan_version }} 
           conan --version
 
-      - name: Configure Conan remote
+      - name: Install Package from Conan Center
         run: |
-
-          conan remote add default-conan-local https://milvus01.jfrog.io/artifactory/api/conan/default-conan-local
-
-      - name: Install package
-        run: |
+          # List remote Conan repositories; should include Conan Center by default
           conan remote list
-          conan install ${{ github.event.inputs.package }}@ -s compiler=gcc -s compiler.version=11 -s compiler.libcxx=libstdc++11 -s build_type=Release
+          # Install the specified package with the given settings
+          conan install ${{ inputs.package }} -s compiler=gcc -s compiler.version=11 -s compiler.libcxx=libstdc++11 -s build_type=Release
 
-      - name: inspect installed package
+      - name: Inspect Installed Package
         run: |
+          # Search for installed packages and their revisions
           conan search '*' --revisions
 
-      - name: Upload
-        if: ${{ github.event.inputs.upload == 'true' }}
+      - name: Upload Package to JFrog Artifactory
+        if: ${{ inputs.upload == 'true' }}
         run: |
-          conan upload ${{ github.event.inputs.package }} -r default-conan-local
+          # Upload only the Conan recipe to the specified local repository, excluding binaries
+          conan upload ${{ inputs.package }} -r default-conan-local
+
+# Inputs section to allow user specification of package, Conan version, and upload flag
+inputs:
+  package:
+    description: 'The Conan package to install (e.g., gdal/3.5.3@)'
+    required: true
+    default: 'gdal/3.5.3@'
+  conan_version:
+    description: 'The version of Conan to install (e.g., 1.65.0)'
+    required: true
+    default: '1.65.0'
+  upload:
+    description: 'Set to true to perform the upload, false for a dry run'
+    required: false
+    default: 'false'
