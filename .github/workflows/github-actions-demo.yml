@@ -6,10 +6,6 @@ on:
         description: 'The Conan package to install'
         required: true
         default: 'gdal/3.5.3'
-      conan_version:
-        description: 'The Conan version to install'
-        required: true
-        default: '1.65.0'
       upload:
         description: 'Set to true to perform the upload, false for dry run'
         required: false
@@ -30,12 +26,12 @@ jobs:
 
       - name: Install Conan
         run: |
-          pip install --user conan==${{ github.event.inputs.conan_version }}
+          pip install --user conan==1.65.0
           conan --version
 
       - name: Configure Conan remote
         run: |
-          conan remote add default-conan-local ${{ secrets.ARTIFACTORY_URL }}
+          conan remote add default-conan-local https://milvus01.jfrog.io/artifactory/api/conan/default-conan-local
 
       - name: Install package
         run: |
