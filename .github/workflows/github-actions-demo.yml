@@ -1,23 +1,27 @@
 name: download package from conan center and upload it and dpendency to jfrog artifactory
-on: [workflow_dispatch]
-inputs:
-  package:
-    description: 'The Conan package to install'
-    required: true
-    default: 'gdal/3.5.3'
-  conan_version:
-    description: 'The Conan version to install'
-    required: true
-    default: '1.65.0'
-  upload:
-    description: 'Set to true to perform the upload, false for dry run'
-    required: false
-    default: 'false'
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: 'The Conan package to install'
+        required: true
+        default: 'gdal/3.5.3'
+      conan_version:
+        description: 'The Conan version to install'
+        required: true
+        default: '1.65.0'
+      upload:
+        description: 'Set to true to perform the upload, false for dry run'
+        required: false
+        default: 'false'
+
 jobs:
   sync-to-artifactory:
     runs-on: ubuntu-latest
     env:
       CONAN_REVISIONS_ENABLED: 1
+      CONAN_LOGIN_USERNAME: ${{ secrets.ARTIFACTORY_USERNAME }}
+      CONAN_PASSWORD: ${{ secrets.ARTIFACTORY_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -26,19 +30,23 @@ jobs:
 
       - name: Install Conan
         run: |
-          pip install --user conan==${{ inputs.conan_version }} 
+          pip install --user conan==${{ github.event.inputs.conan_version }}
           conan --version
+
+      - name: Configure Conan remote
+        run: |
+          conan remote add default-conan-local ${{ secrets.ARTIFACTORY_URL }}
+
       - name: Install package
         run: |
-          # list remote conan repo, should be conan center by default
           conan remote list
-          # install package
-          conan install ${{ inputs.package }} -s compiler=gcc -s compiler.version=11 -s compiler.libcxx=libstdc++11 -s build_type=Release
+          conan install ${{ github.event.inputs.package }} -s compiler=gcc -s compiler.version=11 -s compiler.libcxx=libstdc++11 -s build_type=Release
+
       - name: inspect installed package
         run: |
           conan search '*' --revisions
+
       - name: Upload
-        if: ${{ inputs.upload == 'true' }}
+        if: ${{ github.event.inputs.upload == 'true' }}
         run: |
-          # Upload only the Conan recipe to the default Conan local repository, excluding binaries
-          conan upload ${{ inputs.package }} -r default-conan-local
+          conan upload ${{ github.event.inputs.package }} -r default-conan-local
